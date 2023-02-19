@@ -18,7 +18,7 @@ LISTENS_DATA_PATH =  os.path.join(current_dir, 'listens_data')
 print('listens data path: ', LISTENS_DATA_PATH)
 
 #input data files
-USER_LISTENING_DATA_PATH = 't2_user_listening_data.csv'
+USER_LISTENING_DATA_PATH = 't1_user_listening_data.csv'
 LISTEN_BRAINZ_PATH = 'listenbrainz_msid_mapping.csv'
 CAN_MUSIC_BRAINZ_PATH = 'canonical_musicbrainz_data-002.csv'
 ARTIST_MBID_NAME_PATH = 'musicbrainz_artist_mbid_name.csv'
@@ -211,61 +211,62 @@ if __name__ == '__main__':
 
 
     
-    print('Merging user lisetning data and listen brainz data based on messybrainz id as common key ... ')
+    print('Merging user listening data and listen brainz data based on messybrainz id as common key ... ')
     user_data_pk_col, lisbrainz_data_pk_col = return_primkey_col_nums(USER_LISTENING_DATA_PATH, LISTEN_BRAINZ_PATH , USERDATA_AND_LISBRAINZ_COMMON_COLUMN)
-    print('user_data_pk_col', user_data_pk_col)
-    print('lismusbrainz_data_pk_col', lisbrainz_data_pk_col)
-
+    print('User Data join column number: ', user_data_pk_col)
+    print('Listen Brainz msid file join column number: ', lisbrainz_data_pk_col)
+    print('')
     print('Finding column numbers for recording_mbid in listen brainz data ... ')
     listen_brainz_col_nums = find_column_numbers(LISTEN_BRAINZ_PATH, ['recording_mbid'])
     print('listen_brainz_col_nums', listen_brainz_col_nums)
+    # insert next line in print statement
+    print('')
     mergeUserListeningData = csvPreProcess(USER_LISTENING_DATA_PATH, LISTEN_BRAINZ_PATH, user_data_pk_col, lisbrainz_data_pk_col, listen_brainz_col_nums )
     print('Adding recording mbid number...')
     mergeUserListeningData.merge_csv(USERDATA_LISTENBRAINZ_MERGE_FILENAME)
     print('Merging user listening data and listen brainz data completed successfully!')
     end2 = time.monotonic()
     print('Time taken to merge user listening data and listen brainz data(end2 - end): ', end2 - end)
+    print('/////')
 
-    
+    print('Merging user lisetning data, listen brainz data with canonical music brainz data based on recording_mbid as common key ... ')
+    userlistenbrainz_data_pk_col, can_musicbrainz_data_pk_col = return_primkey_col_nums(USERDATA_LISTENBRAINZ_MERGE_FILENAME, CAN_MUSIC_BRAINZ_PATH , USERDATA_LISBRAINZ_AND_CANMUSICBRAINZ_COMMON_COLUMN)
+    print('User ListenBrainz Merge file column number for recording_mbid', userlistenbrainz_data_pk_col)
+    print('Canonical MusicBrainz File column number for recording_mbid', can_musicbrainz_data_pk_col)
+    print('')
+    print('Searching for artists_mbid in Canoncial Music Brainz Data File based on recording_mbid  ...')
+    can_musicbrainz_col_nums = find_column_numbers(CAN_MUSIC_BRAINZ_PATH, ['artist_mbids'])
+    print('Columns numbers of Canonical Music Brainz data file to be added for processing: ', can_musicbrainz_col_nums)
+    mergeUserListeningData = csvPreProcess(USERDATA_LISTENBRAINZ_MERGE_FILENAME, CAN_MUSIC_BRAINZ_PATH, userlistenbrainz_data_pk_col, can_musicbrainz_data_pk_col, can_musicbrainz_col_nums )
+    mergeUserListeningData.merge_csv(USER_LISTENBRAINZ_MUSICBRAINZ_MERGE_FILENAME)
+    print(' Merging csv files and added artist_mbid column succesfully! ')
 
-    # print('Merging user lisetning data, listen brainz data with canonical music brainz data based on recording_mbid as common key ... ')
-    # userlistenbrainz_data_pk_col, can_musicbrainz_data_pk_col = return_primkey_col_nums(USERDATA_LISTENBRAINZ_MERGE_FILENAME, CAN_MUSIC_BRAINZ_PATH , USERDATA_LISBRAINZ_AND_CANMUSICBRAINZ_COMMON_COLUMN)
-    # print('userlistenbrainz_data_pk_col', userlistenbrainz_data_pk_col)
-    # print('can_musicbrainz_data_pk_col', can_musicbrainz_data_pk_col)
-
-    # print('Searching for artists_mbid based on recording_mbid  ...')
-    # can_musicbrainz_col_nums = find_column_numbers(CAN_MUSIC_BRAINZ_PATH, ['artist_mbids'])
-    # print('can_musicbrainz_col_nums', can_musicbrainz_col_nums)
-    # mergeUserListeningData = csvPreProcess(USERDATA_LISTENBRAINZ_MERGE_FILENAME, CAN_MUSIC_BRAINZ_PATH, userlistenbrainz_data_pk_col, can_musicbrainz_data_pk_col, can_musicbrainz_col_nums )
-    # mergeUserListeningData.merge_csv(ARTIST_MBID_NAME_PATH)
-    # print(' Merging csv files and added artist_mbid column succesfully! ')
-
-    # end3 = time.monotonic()
-    # print('Time taken to merge user listening data, listen brainz data with canonical music brainz data: ', end3 - end2)
-
+    end3 = time.monotonic()
+    print('Time taken to merge user listening data, listen brainz data with canonical music brainz data: ', end3 - end2)
+    print('/////')
 
 
-   
+    print('Looking for arist name based on artist_mbid ... ')
+    artist_data_pk_col = find_column_numbers(ARTIST_MBID_NAME_PATH, ['mbid'])[0]
+    user_listenbrainz_musicbrainz_merge_file_pk_col = find_column_numbers(USER_LISTENBRAINZ_MUSICBRAINZ_MERGE_FILENAME, [USERLISTENMUSICBRAINZ_ARTISTMBID_COMMON_COLUMN])[0]
+    print('user_listenbrainz_musicbrainz_merge_file_pk_col', user_listenbrainz_musicbrainz_merge_file_pk_col)
+    print('artist_data_pk_col', artist_data_pk_col)
 
-    # print('Looking for arist name based on artist_mbid ... ')
-    # artist_data_pk_col = find_column_numbers(ARTIST_MBID_NAME_PATH, ['mbid'])[0]
-    # user_listenbrainz_musicbrainz_merge_file_pk_col = find_column_numbers(USER_LISTENBRAINZ_MUSICBRAINZ_MERGE_FILENAME, [USERLISTENMUSICBRAINZ_ARTISTMBID_COMMON_COLUMN])[0]
-    # print('user_listenbrainz_musicbrainz_merge_file_pk_col', user_listenbrainz_musicbrainz_merge_file_pk_col)
-    # print('artist_data_pk_col', artist_data_pk_col)
+    print('Searching for artist name based on artist_mbids  ...')
+    artist_mbid_name_cols = find_column_numbers(ARTIST_MBID_NAME_PATH, ['name'])
+    print('artist_mbid_name_cols', artist_mbid_name_cols)
+    mergeUserListeningData = csvPreProcess(USER_LISTENBRAINZ_MUSICBRAINZ_MERGE_FILENAME, ARTIST_MBID_NAME_PATH, user_listenbrainz_musicbrainz_merge_file_pk_col, artist_data_pk_col, artist_mbid_name_cols )
+    mergeUserListeningData.merge_csv(USER_LISTENBRAINZ_MUSICBRAINZ_ARTISTMBID_MERGE_FILENAME)
+    print(' Merging csv files and added artist_mbid column succesfully! ')
 
-    # print('Searching for artist name based on artist_mbids  ...')
-    # artist_mbid_name_cols = find_column_numbers(ARTIST_MBID_NAME_PATH, ['name'])
-    # print('artist_mbid_name_cols', artist_mbid_name_cols)
-    # mergeUserListeningData = csvPreProcess(USER_LISTENBRAINZ_MUSICBRAINZ_MERGE_FILENAME, ARTIST_MBID_NAME_PATH, user_listenbrainz_musicbrainz_merge_file_pk_col, artist_data_pk_col, artist_mbid_name_cols )
-    # mergeUserListeningData.merge_csv()
-    # print(' Merging csv files and added artist_mbid column succesfully! ')
-
-    # print('Counting number of listenings for each artist ... ')
-    # count_number_of_listenings(COUNT_OF_USERLISTENINGS_FILENAME)
-    # print('Counting number of listenings for each artist completed successfully! ')
-    # end4 = time.monotonic()
-    # print('Time taken to merge user listening data, listen brainz data with canonical music brainz data: ', end4 - end3)
-
-    # print(' Preprocessing completed successfully!')
+    print('Counting number of listenings for each artist ... ')
+    count_number_of_listenings(USER_LISTENBRAINZ_MUSICBRAINZ_ARTISTMBID_MERGE_FILENAME, COUNT_OF_USERLISTENINGS_FILENAME)
+    print('Counting number of listenings for each artist completed successfully! ')
+    end4 = time.monotonic()
+    print('Time taken to merge user listening data, listen brainz data with canonical music brainz data: ', end4 - end3)
+    print('****')
+    print('Total time taken to preprocess data: ', end4 - start)
+    print('****')
+    print(' Preprocessing completed successfully!')
 
    
